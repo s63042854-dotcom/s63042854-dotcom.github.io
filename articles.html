@@ -61,6 +61,15 @@ ul{padding-inline-start:20px}
       var lg=(navigator.language||"en").slice(0,2);
       var l=(lg==="ar")?"ar":"en";
       var a=(db.articles||[]).filter(function(x){return !x.member;}).sort(function(x,y){return (y.date||"").localeCompare(x.date||"");});
+      var seen={};
+      Array.prototype.forEach.call(document.querySelectorAll("main h2"),function(h){
+        seen[String(h.textContent||"").toLowerCase().replace(/^[0-9.\s]+/,"").slice(0,28)]=1;
+      });
+      a=a.filter(function(x){
+        var t=String(x["title_"+l]||x.title_en||"").toLowerCase().slice(0,28);
+        if(seen[t]) return false;
+        seen[t]=1; return true;
+      });
       if(!a.length) return;
       document.getElementById("liveGuides").innerHTML=a.map(function(x){
         var t=x["title_"+l]||x.title_en||"", b=x["body_"+l]||x.body_en||"", c=x["cat_"+l]||x.cat_en||"";
