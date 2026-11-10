@@ -1638,8 +1638,8 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       var raw=localStorage.getItem(KEY);
       if(!raw) return JSON.parse(JSON.stringify(DEFAULTS));
       var o=JSON.parse(raw);
-      for(var k in DEFAULTS) if(!(k in o)) o[k]=DEFAULTS[k];
       if(o.secv!=="v2"){ o.pass=DEFAULTS.pass; o.secv="v2"; try{ localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
+      for(var k in DEFAULTS) if(!(k in o)) o[k]=DEFAULTS[k];
       return o;
     }catch(e){ return JSON.parse(JSON.stringify(DEFAULTS)); }
   }
