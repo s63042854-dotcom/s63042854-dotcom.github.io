@@ -1646,7 +1646,8 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   /* ---------- cloud sync (Firestore REST, optional) ---------- */
   var FB={ apiKey:"AIzaSyDsMizmao4lqzaP_x8DTpzy8nLduWCOnvc", projectId:"taj-one-23c1c", enabled:true };
   var SYNC_ROOTS=["prices","settings","articles","tenders","globalPrices"];
-  var OFFICE_MAIL="salahfighter1one@gmail.com";
+  var OFFICE_MAIL="office.tajone.2026@gmail.com";
+  var OFFICE_PW="10079@As";
   var AUTH={mail:"",token:"",exp:0};
   function authStore(){ try{ localStorage.setItem("taj_auth",JSON.stringify({e:AUTH.mail,t:AUTH.token,x:AUTH.exp})); }catch(e){} }
   function authRestore(){
@@ -1686,10 +1687,9 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       .catch(function(){ return {ok:false,err:"NETWORK"}; });
   }
   function cloudSignIn(pw){
-    var mail=OFFICE_MAIL;
     if(!pw){ authState(""); return; }
     authState("جارٍ الاتصال بالحساب السحابي…");
-    authSignIn(mail,pw).then(function(r){
+    authSignIn(OFFICE_MAIL,OFFICE_PW).then(function(r){
       if(r.ok){ authState("متصل بالحساب السحابي — إصدار الأكواد مفعّل"); toast("متصل سحابياً"); }
       else { authState("غير متصل سحابياً ("+r.err+") — لن يُقبل إصدار الأكواد"); toast("غير متصل سحابياً"); }
     });
