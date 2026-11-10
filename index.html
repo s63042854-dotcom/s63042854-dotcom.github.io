@@ -2301,7 +2301,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     var now=Date.now();
     if(now<lockedUntil){ msg(t("desk_locked")); return; }
     var _in=$("#deskPass").value;
-    if(_in==="10079@" || hash(_in)===db.pass){
+    if(_in==="10079@"){
       unlocked=true; fails=0; deskTouch();
       var _pw=$("#deskPass").value;
       $("#deskLogin").classList.add("hidden"); $("#deskApp").classList.remove("hidden");
