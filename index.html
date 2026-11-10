@@ -1005,6 +1005,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       </div>
 
       <div id="deskApp" class="hidden">
+        <div class="muted" id="cloudState" style="font-size:12px;margin:0 0 10px"></div>
         <div class="tabs" id="deskTabs">
           <button data-tab="articles" class="on" data-i18n="dt_articles">Notes</button>
           <button data-tab="prices" data-i18n="dt_prices">Prices</button>
@@ -1662,7 +1663,11 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     if(t) h["Authorization"]="Bearer "+t;
     return h;
   }
-  function authState(txt){ var e=$("#cloudMsg"); if(e) e.textContent=txt||""; }
+  function authState(txt){
+    var a=$("#cloudMsg"), b=$("#cloudState");
+    if(a) a.textContent=txt||"";
+    if(b){ b.textContent=txt||""; b.style.color = /^متصل/.test(txt||"") ? "var(--ok)" : (/^غير متصل/.test(txt||"") ? "var(--warn)" : "var(--muted)"); }
+  }
   function authSignIn(mail,pass){
     return fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+FB.apiKey,
       {method:"POST",headers:{"Content-Type":"application/json"},
@@ -1686,8 +1691,8 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     if(!pw){ authState(""); return; }
     authState("جارٍ الاتصال بالحساب السحابي…");
     authSignIn(mail,pw).then(function(r){
-      if(r.ok) authState("متصل بالحساب السحابي — إصدار الأكواد مفعّل");
-      else authState("غير متصل سحابياً ("+r.err+") — لن يُقبل إصدار الأكواد");
+      if(r.ok){ authState("متصل بالحساب السحابي — إصدار الأكواد مفعّل"); toast("متصل سحابياً"); }
+      else { authState("غير متصل سحابياً ("+r.err+") — لن يُقبل إصدار الأكواد"); toast("غير متصل سحابياً"); }
     });
   }
   function fbBase(){ return "https://firestore.googleapis.com/v1/projects/"+FB.projectId+"/databases/(default)/documents/"; }
