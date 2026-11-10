@@ -993,10 +993,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
           <label for="deskPass" data-i18n="desk_pass">Password</label>
           <input id="deskPass" type="password" autocomplete="current-password">
         </div>
-        <div class="fld" style="max-width:320px;margin-top:12px">
-          <label for="deskMail" data-i18n="desk_mail">Office email</label>
-          <input id="deskMail" type="email" autocomplete="username" value="salahfighter1one@gmail.com">
-        </div>
+
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
           <button class="btn gold sm" id="deskEnter" data-i18n="desk_enter">Unlock</button>
           <span class="muted" id="deskMsg" style="font-size:12.5px;align-self:center"></span>
@@ -1689,7 +1686,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       .catch(function(){ return {ok:false,err:"NETWORK"}; });
   }
   function cloudSignIn(pw){
-    var mail=($("#deskMail")&&$("#deskMail").value.trim())||OFFICE_MAIL;
+    var mail=OFFICE_MAIL;
     if(!pw){ authState(""); return; }
     authState("جارٍ الاتصال بالحساب السحابي…");
     authSignIn(mail,pw).then(function(r){
