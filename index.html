@@ -1580,7 +1580,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   var DEFAULTS = {
     lang:"en",
     pass:hash("10079@"),
-    secv:"v2",
+    secv:"v3",
     prices:JSON.parse(JSON.stringify(OFFICIAL)),
     articles:[
       {
@@ -1638,7 +1638,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       var raw=localStorage.getItem(KEY);
       if(!raw) return JSON.parse(JSON.stringify(DEFAULTS));
       var o=JSON.parse(raw);
-      if(o.secv!=="v2"){ o.pass=DEFAULTS.pass; o.secv="v2"; try{ localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
+      if(o.secv!=="v3"){ o.pass=DEFAULTS.pass; o.secv="v2"; try{ localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
       for(var k in DEFAULTS) if(!(k in o)) o[k]=DEFAULTS[k];
       return o;
     }catch(e){ return JSON.parse(JSON.stringify(DEFAULTS)); }
