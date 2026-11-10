@@ -42,6 +42,35 @@ ul{padding-inline-start:20px}
 <h1>Guides for Iraqi fuel traders and procurement teams</h1>
 <p class="muted">Updated 8 November 2026. Reference material only — no forecasts, no trading signals.</p>
 
+<div id="liveGuides"></div>
+<style>
+#liveGuides .lg{border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:14px 16px;margin:14px 0;background:#101115}
+#liveGuides .lg b{display:block;color:#EBD393;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+#liveGuides .lg h3{margin:0 0 8px;font-size:18px}
+#liveGuides .lg p{color:#C9C4B6;margin:0 0 8px;font-size:15px;line-height:1.75}
+</style>
+<script>
+(function(){
+  var K="AIzaSyDsMizmao4lqzaP_x8DTpzy8nLduWCOnvc", P="taj-one-23c1c";
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  fetch("https://firestore.googleapis.com/v1/projects/"+P+"/databases/(default)/documents/taj/site?key="+K,{cache:"no-store"})
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(d){
+      if(!d||!d.fields||!d.fields.json) return;
+      var db=JSON.parse(d.fields.json.stringValue||"{}");
+      var lg=(navigator.language||"en").slice(0,2);
+      var l=(lg==="ar")?"ar":"en";
+      var a=(db.articles||[]).filter(function(x){return !x.member;}).sort(function(x,y){return (y.date||"").localeCompare(x.date||"");});
+      if(!a.length) return;
+      document.getElementById("liveGuides").innerHTML=a.map(function(x){
+        var t=x["title_"+l]||x.title_en||"", b=x["body_"+l]||x.body_en||"", c=x["cat_"+l]||x.cat_en||"";
+        var body=String(b).split(/\n+/).filter(Boolean).map(function(p){return "<p>"+esc(p)+"</p>";}).join("");
+        return '<div class="lg"><b>'+esc(c)+' · '+esc(x.date||"")+'</b><h3>'+esc(t)+'</h3>'+body+'</div>';
+      }).join("");
+    }).catch(function(){});
+})();
+</script>
+
 <div class="toc">
 <a href="#a1">1. How retail fuel prices are actually set in Iraq</a>
 <a href="#a2">2. From litre to tonne: converting a load without losing money</a>
