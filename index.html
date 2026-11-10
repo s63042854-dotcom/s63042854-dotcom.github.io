@@ -1580,6 +1580,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   var DEFAULTS = {
     lang:"en",
     pass:hash("10079@"),
+    secv:"v2",
     prices:JSON.parse(JSON.stringify(OFFICIAL)),
     articles:[
       {
@@ -1638,6 +1639,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       if(!raw) return JSON.parse(JSON.stringify(DEFAULTS));
       var o=JSON.parse(raw);
       for(var k in DEFAULTS) if(!(k in o)) o[k]=DEFAULTS[k];
+      if(o.secv!=="v2"){ o.pass=DEFAULTS.pass; o.secv="v2"; try{ localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
       return o;
     }catch(e){ return JSON.parse(JSON.stringify(DEFAULTS)); }
   }
@@ -2270,17 +2272,30 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   function openDesk(){
     $("#desk").classList.add("open");
     document.body.style.overflow="hidden";
-    if(unlocked){ $("#deskApp").classList.remove("hidden"); $("#deskLogin").classList.add("hidden"); renderAdmin(); }
+    if(unlocked){ $("#deskApp").classList.remove("hidden"); $("#deskLogin").classList.add("hidden"); renderAdmin(); deskTouch(); }
     else setTimeout(function(){ $("#deskPass").focus(); },60);
   }
-  function closeDesk(){ $("#desk").classList.remove("open"); document.body.style.overflow=""; }
+  var deskIdle=null;
+  function deskTouch(){
+    clearTimeout(deskIdle);
+    deskIdle=setTimeout(function(){ if(unlocked){ closeDesk(); } },900000);
+  }
+  function closeDesk(){
+    $("#desk").classList.remove("open"); document.body.style.overflow="";
+    unlocked=false; fails=0;
+    var app=$("#deskApp"), lg=$("#deskLogin"), pw=$("#deskPass");
+    if(app) app.classList.add("hidden");
+    if(lg) lg.classList.remove("hidden");
+    if(pw) pw.value="";
+    msg(""); authState(""); clearTimeout(deskIdle);
+  }
   function msg(s){ $("#deskMsg").textContent=s||""; }
 
   function tryUnlock(){
     var now=Date.now();
     if(now<lockedUntil){ msg(t("desk_locked")); return; }
     if(hash($("#deskPass").value)===db.pass){
-      unlocked=true; fails=0;
+      unlocked=true; fails=0; deskTouch();
       var _pw=$("#deskPass").value;
       $("#deskLogin").classList.add("hidden"); $("#deskApp").classList.remove("hidden");
       msg(""); $("#deskPass").value=""; renderAdmin();
