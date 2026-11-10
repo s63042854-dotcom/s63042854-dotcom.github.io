@@ -993,10 +993,15 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
           <label for="deskPass" data-i18n="desk_pass">Password</label>
           <input id="deskPass" type="password" autocomplete="current-password">
         </div>
+        <div class="fld" style="max-width:320px;margin-top:12px">
+          <label for="deskMail" data-i18n="desk_mail">Office email</label>
+          <input id="deskMail" type="email" autocomplete="username" value="salahfighter1one@gmail.com">
+        </div>
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
           <button class="btn gold sm" id="deskEnter" data-i18n="desk_enter">Unlock</button>
           <span class="muted" id="deskMsg" style="font-size:12.5px;align-self:center"></span>
         </div>
+        <div class="muted" id="cloudMsg" style="font-size:12px;margin-top:10px"></div>
       </div>
 
       <div id="deskApp" class="hidden">
@@ -1639,6 +1644,50 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   /* ---------- cloud sync (Firestore REST, optional) ---------- */
   var FB={ apiKey:"AIzaSyDsMizmao4lqzaP_x8DTpzy8nLduWCOnvc", projectId:"taj-one-23c1c", enabled:true };
   var SYNC_ROOTS=["prices","settings","articles","tenders","globalPrices"];
+  var OFFICE_MAIL="salahfighter1one@gmail.com";
+  var AUTH={mail:"",token:"",exp:0};
+  function authStore(){ try{ localStorage.setItem("taj_auth",JSON.stringify({e:AUTH.mail,t:AUTH.token,x:AUTH.exp})); }catch(e){} }
+  function authRestore(){
+    try{
+      var o=JSON.parse(localStorage.getItem("taj_auth")||"null");
+      if(o&&o.t&&o.x>Date.now()){ AUTH={mail:o.e||"",token:o.t,exp:o.x}; }
+    }catch(e){}
+  }
+  function authToken(){ if(AUTH.token&&Date.now()<AUTH.exp) return AUTH.token; return ""; }
+  function authClear(){ AUTH={mail:"",token:"",exp:0}; try{ localStorage.removeItem("taj_auth"); }catch(e){} }
+  function authHdr(){
+    var h={"Content-Type":"application/json"}, t=authToken();
+    if(t) h["Authorization"]="Bearer "+t;
+    return h;
+  }
+  function authState(txt){ var e=$("#cloudMsg"); if(e) e.textContent=txt||""; }
+  function authSignIn(mail,pass){
+    return fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+FB.apiKey,
+      {method:"POST",headers:{"Content-Type":"application/json"},
+       body:JSON.stringify({email:mail,password:pass,returnSecureToken:true})})
+      .then(function(r){
+        return r.json().then(function(d){
+          if(!r.ok){
+            var m=(d&&d.error&&d.error.message)||"ERROR";
+            return {ok:false,err:m};
+          }
+          AUTH.mail=d.email||mail; AUTH.token=d.idToken||"";
+          AUTH.exp=Date.now()+((parseInt(d.expiresIn,10)||3600)*1000)-60000;
+          authStore();
+          return {ok:true};
+        });
+      })
+      .catch(function(){ return {ok:false,err:"NETWORK"}; });
+  }
+  function cloudSignIn(pw){
+    var mail=($("#deskMail")&&$("#deskMail").value.trim())||OFFICE_MAIL;
+    if(!pw){ authState(""); return; }
+    authState("جارٍ الاتصال بالحساب السحابي…");
+    authSignIn(mail,pw).then(function(r){
+      if(r.ok) authState("متصل بالحساب السحابي — إصدار الأكواد مفعّل");
+      else authState("غير متصل سحابياً ("+r.err+") — لن يُقبل إصدار الأكواد");
+    });
+  }
   function fbBase(){ return "https://firestore.googleapis.com/v1/projects/"+FB.projectId+"/databases/(default)/documents/"; }
   function fbDoc(path){ return fbBase()+path+"?key="+FB.apiKey; }
   function fbRead(path){
@@ -1646,8 +1695,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   }
   function fbWrite(path,obj){
     var body={fields:{json:{stringValue:JSON.stringify(obj)}} };
-    if(db.wkey) body.fields.sig={stringValue:db.wkey};
-    return fetch(fbDoc(path),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+    return fetch(fbDoc(path),{method:"PATCH",headers:authHdr(),body:JSON.stringify(body)})
       .then(function(r){ return r.ok; }).catch(function(){ return false; });
   }
   function cloudEnabled(){ return !!(FB.apiKey && FB.projectId); }
@@ -2173,8 +2221,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       issuedAt:{stringValue:todayBaghdad()},
       used:{booleanValue:false}
     };
-    if(db.wkey) fields.sig={stringValue:db.wkey};
-    return fetch(fbCodeUrl(code),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:fields})})
+    return fetch(fbCodeUrl(code),{method:"PATCH",headers:authHdr(),body:JSON.stringify({fields:fields})})
       .then(function(r){ return r.ok; }).catch(function(){ return false; });
   }
   function fbMarkUsed(code){
@@ -2234,8 +2281,10 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     if(now<lockedUntil){ msg(t("desk_locked")); return; }
     if(hash($("#deskPass").value)===db.pass){
       unlocked=true; fails=0;
+      var _pw=$("#deskPass").value;
       $("#deskLogin").classList.add("hidden"); $("#deskApp").classList.remove("hidden");
       msg(""); $("#deskPass").value=""; renderAdmin();
+      cloudSignIn(_pw);
     } else {
       fails++;
       if(fails>=5){ lockedUntil=now+60000; fails=0; msg(t("desk_locked")); }
@@ -2432,6 +2481,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     }
 
     bindLead();
+    authRestore();
     loadFbCfg();
     if($("#fbSave")) $("#fbSave").addEventListener("click",function(){
       var k=($("#fbKey").value||"").trim(), pid=($("#fbProj").value||"").trim();
