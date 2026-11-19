@@ -992,11 +992,13 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
         <div class="fld" style="max-width:320px">
           <label for="deskPass" data-i18n="desk_pass">Password</label>
           <div style="position:relative">
-            <input id="deskPass" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%;padding-right:44px">
+            <input type="password" name="decoy_pass" tabindex="-1" aria-hidden="true" autocomplete="username" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;opacity:0">
+            <input id="deskPass" name="deskpass" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%;padding-right:44px">
             <button type="button" id="deskEye" aria-label="show" style="position:absolute;top:50%;right:8px;transform:translateY(-50%);background:none;border:0;font-size:16px;cursor:pointer;opacity:.6">👁</button>
           </div>
         </div>
 
+        <p class="muted" style="font-size:12px;margin-top:8px" data-i18n="desk_hint">If the manual entry fails, paste the password instead of typing it.</p>
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
           <button class="btn gold sm" id="deskEnter" data-i18n="desk_enter">Unlock</button>
           <span class="muted" id="deskMsg" style="font-size:12.5px;align-self:center"></span>
@@ -1287,7 +1289,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       foot_desk:"Office desk", foot_rights:"© 2026 TAJ ONE. All rights reserved.",
       foot_legal:"Information is provided for reference only and does not constitute a commercial offer or advice.",
       desk_title:"Office desk", desk_login_sub:"Enter the desk password to manage prices, notes, codes and settings.",
-      desk_pass:"Password", desk_enter:"Unlock", desk_locked:"Too many attempts. Try again in a moment.",
+      desk_pass:"Password", desk_hint:"If the manual entry fails, paste the password instead of typing it.", desk_enter:"Unlock", desk_locked:"Too many attempts. Try again in a moment.",
       desk_wrong:"Wrong password.", desk_ok:"Unlocked.",
       dt_tenders:"Tenders", dt_articles:"Notes", dt_prices:"Prices", dt_settings:"Settings",
       t_title:"Title", t_close:"Closing date", t_org:"Agency", t_link:"Link", t_add:"Add tender",
@@ -1428,7 +1430,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       foot_desk:"غرفة المكتب", foot_rights:"© 2026 تاج ون. جميع الحقوق محفوظة.",
       foot_legal:"المعلومات للاستعمال المرجعي فقط ولا تُشكّل عرضاً تجارياً أو نصيحة.",
       desk_title:"غرفة المكتب", desk_login_sub:"أدخل كلمة سر المكتب لإدارة الأسعار والملاحظات والأكواد والإعدادات.",
-      desk_pass:"كلمة السر", desk_enter:"فتح", desk_locked:"محاولات كثيرة. حاول بعد قليل.",
+      desk_pass:"كلمة السر", desk_hint:"إذا لم ينجح الإدخال اليدوي، الصق كلمة السر بدل كتابتها.", desk_enter:"فتح", desk_locked:"محاولات كثيرة. حاول بعد قليل.",
       desk_wrong:"كلمة السر خاطئة.", desk_ok:"تم الفتح.",
       dt_tenders:"المشتريات", dt_articles:"الملاحظات", dt_prices:"الأسعار", dt_settings:"الإعدادات",
       t_title:"العنوان", t_close:"تاريخ الإغلاق", t_org:"الجهة", t_link:"الرابط", t_add:"أضف مناقصة",
@@ -1488,7 +1490,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       foot_desk:"Büro", foot_rights:"© 2026 TAJ ONE. Alle Rechte vorbehalten.",
       foot_legal:"Informationen dienen nur als Referenz und stellen kein Angebot und keine Beratung dar.",
       desk_title:"Büro", desk_login_sub:"Büropasswort eingeben, um Preise, Notizen, Codes und Einstellungen zu verwalten.",
-      desk_pass:"Passwort", desk_enter:"Entsperren", desk_locked:"Zu viele Versuche. Bitte kurz warten.",
+      desk_pass:"Passwort", desk_hint:"Falls die Eingabe fehlschlägt, fügen Sie das Passwort ein, statt es zu tippen.", desk_enter:"Entsperren", desk_locked:"Zu viele Versuche. Bitte kurz warten.",
       desk_wrong:"Falsches Passwort.", desk_ok:"Entsperrt.",
       dt_tenders:"Ausschreibungen", dt_articles:"Notizen", dt_prices:"Preise", dt_settings:"Einstellungen",
       t_title:"Titel", t_close:"Frist", t_org:"Organisation", t_link:"Link", t_add:"Hinzufügen",
@@ -1546,7 +1548,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       foot_desk:"Ofis masası", foot_rights:"© 2026 TAJ ONE. Tüm hakları saklıdır.",
       foot_legal:"Bilgiler yalnızca referans amaçlıdır; ticari teklif veya danışmanlık teşkil etmez.",
       desk_title:"Ofis masası", desk_login_sub:"Fiyatları, notları, kodları ve ayarları yönetmek için masa şifresini girin.",
-      desk_pass:"Şifre", desk_enter:"Aç", desk_locked:"Çok fazla deneme. Biraz sonra tekrar deneyin.",
+      desk_pass:"Şifre", desk_hint:"Elle giriş başarısız olursa şifreyi yazmak yerine yapıştırın.", desk_enter:"Aç", desk_locked:"Çok fazla deneme. Biraz sonra tekrar deneyin.",
       desk_wrong:"Şifre yanlış.", desk_ok:"Açıldı.",
       dt_tenders:"İhaleler", dt_articles:"Notlar", dt_prices:"Fiyatlar", dt_settings:"Ayarlar",
       t_title:"Başlık", t_close:"Kapanış tarihi", t_org:"Kurum", t_link:"Bağlantı", t_add:"İhale ekle",
