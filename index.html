@@ -991,7 +991,10 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
         <p class="muted" style="font-size:13.5px;margin-bottom:16px" data-i18n="desk_login_sub">Enter the desk password to manage prices, notes, codes and settings.</p>
         <div class="fld" style="max-width:320px">
           <label for="deskPass" data-i18n="desk_pass">Password</label>
-          <input id="deskPass" type="password" autocomplete="current-password">
+          <div style="position:relative">
+            <input id="deskPass" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%;padding-right:44px">
+            <button type="button" id="deskEye" aria-label="show" style="position:absolute;top:50%;right:8px;transform:translateY(-50%);background:none;border:0;font-size:16px;cursor:pointer;opacity:.6">👁</button>
+          </div>
         </div>
 
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
@@ -2321,7 +2324,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   function tryUnlock(){
     var now=Date.now();
     if(now<lockedUntil){ msg(t("desk_locked")); return; }
-    var _in=$("#deskPass").value;
+    var _in=String($("#deskPass").value||"").replace(/\s+/g,"");
     if(!_in){ msg(t("desk_wrong")); return; }
     var _btn=$("#deskEnter");
     if(_btn && _btn.disabled) return;
@@ -2392,6 +2395,9 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeDesk(); });
     $("#deskEnter").addEventListener("click",tryUnlock);
     $("#deskPass").addEventListener("keydown",function(e){ if(e.key==="Enter") tryUnlock(); });
+    if($("#deskEye")) $("#deskEye").addEventListener("click",function(){
+      var f=$("#deskPass"); f.type = (f.type==="password") ? "text" : "password"; f.focus();
+    });
 
     $$("#deskTabs button").forEach(function(b){
       b.addEventListener("click",function(){
