@@ -993,7 +993,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
           <label for="deskPass" data-i18n="desk_pass">Password</label>
           <div style="position:relative">
             <input type="password" name="decoy_pass" tabindex="-1" aria-hidden="true" autocomplete="username" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;opacity:0">
-            <input id="deskPass" name="deskpass" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%;padding-right:44px">
+            <input id="deskPass" name="deskcode" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:100%;padding-right:44px;-webkit-text-security:disc">
             <button type="button" id="deskEye" aria-label="show" style="position:absolute;top:50%;right:8px;transform:translateY(-50%);background:none;border:0;font-size:16px;cursor:pointer;opacity:.6">👁</button>
           </div>
         </div>
@@ -2398,7 +2398,10 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     $("#deskEnter").addEventListener("click",tryUnlock);
     $("#deskPass").addEventListener("keydown",function(e){ if(e.key==="Enter") tryUnlock(); });
     if($("#deskEye")) $("#deskEye").addEventListener("click",function(){
-      var f=$("#deskPass"); f.type = (f.type==="password") ? "text" : "password"; f.focus();
+      var f=$("#deskPass");
+      var masked = f.style.webkitTextSecurity !== "none";
+      f.style.webkitTextSecurity = masked ? "none" : "disc";
+      f.focus();
     });
 
     $$("#deskTabs button").forEach(function(b){
