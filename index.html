@@ -671,24 +671,24 @@
             <div class="fields">
               <div class="fld full">
                 <label for="cVol" data-i18n="f_volume">Volume (litres)</label>
-                <input id="cVol" type="number" inputmode="decimal" value="20000" min="0" step="100">
+                <input id="cVol" type="text" inputmode="decimal" dir="ltr" value="20000" min="0" step="100">
                 <span class="hint" data-i18n="h_volume">A typical road tanker load is around 20,000–30,000 litres.</span>
               </div>
               <div class="fld">
                 <label for="cBuy" data-i18n="f_buy">Purchase price / litre</label>
-                <input id="cBuy" type="number" inputmode="decimal" value="400" min="0" step="10">
+                <input id="cBuy" type="text" inputmode="decimal" dir="ltr" value="400" min="0" step="10">
               </div>
               <div class="fld">
                 <label for="cSell" data-i18n="f_sell">Selling price / litre</label>
-                <input id="cSell" type="number" inputmode="decimal" value="525" min="0" step="10">
+                <input id="cSell" type="text" inputmode="decimal" dir="ltr" value="525" min="0" step="10">
               </div>
               <div class="fld">
                 <label for="cTrans" data-i18n="f_transport">Transport / litre</label>
-                <input id="cTrans" type="number" inputmode="decimal" value="25" min="0" step="5">
+                <input id="cTrans" type="text" inputmode="decimal" dir="ltr" value="25" min="0" step="5">
               </div>
               <div class="fld">
                 <label for="cOther" data-i18n="f_other">Other costs / litre</label>
-                <input id="cOther" type="number" inputmode="decimal" value="10" min="0" step="5">
+                <input id="cOther" type="text" inputmode="decimal" dir="ltr" value="10" min="0" step="5">
               </div>
             </div>
           </div>
@@ -2153,7 +2153,20 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       setTimeout(function(){ URL.revokeObjectURL(a.href); },1500);
     }catch(e){}
   }
-  function renderAll(){ renderPrices(); renderMetals(); renderTenders(); renderArticles(); renderContact(); renderMember(); calc(); }
+  /* the Zain Cash / WhatsApp number can be changed from the office desk settings */
+  function waNumber(){
+    var raw=(db.settings && db.settings.wa) ? String(db.settings.wa) : "";
+    var digits=raw.replace(/[^0-9]/g,"");
+    return digits.length>=8 ? digits : "9647501700795";
+  }
+  function applyWa(){
+    var n=waNumber();
+    document.querySelectorAll('a[href^="https://wa.me/"]').forEach(function(a){
+      a.setAttribute("href", a.getAttribute("href").replace(/wa\.me\/[^?]+/, "wa.me/"+n));
+    });
+    document.querySelectorAll(".paynum").forEach(function(el){ el.textContent = db.settings && db.settings.wa ? db.settings.wa : "0750 1700 795"; });
+  }
+  function renderAll(){ renderPrices(); renderMetals(); renderTenders(); renderArticles(); renderContact(); renderMember(); applyWa(); calc(); }
 
   /* ---------- licence & activation codes ---------- */
   var ALPHA="ACDEFGHJKLMNPRTUVWXY23456789";
@@ -2380,7 +2393,23 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       });
     });
 
-    ["cVol","cBuy","cSell","cTrans","cOther"].forEach(function(id){ $("#"+id).addEventListener("input",calc); });
+    /* force Latin digits in every numeric field, whatever keyboard the user has */
+  function toLatinDigits(v){
+    return String(v||"")
+      .replace(/[\u0660-\u0669]/g,function(d){return String(d.charCodeAt(0)-0x0660);})
+      .replace(/[\u06F0-\u06F9]/g,function(d){return String(d.charCodeAt(0)-0x06F0);})
+      .replace(/\u066B/g,".")
+      .replace(/[,\u066C]/g,"");
+  }
+  document.addEventListener("input",function(e){
+    var el=e.target;
+    if(!el || el.tagName!=="INPUT") return;
+    if(el.getAttribute("inputmode")!=="decimal" && el.type!=="number") return;
+    var clean=toLatinDigits(el.value);
+    if(clean!==el.value){ el.value=clean; }
+  },true);
+
+  ["cVol","cBuy","cSell","cTrans","cOther"].forEach(function(id){ $("#"+id).addEventListener("input",calc); });
     $$("#curToggle button").forEach(function(b){
       b.addEventListener("click",function(){
         cur=b.dataset.cur;
