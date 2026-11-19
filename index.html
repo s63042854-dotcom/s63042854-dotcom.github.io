@@ -1903,11 +1903,26 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     }catch(e){ loadBorsa(i+1); }
   }
 
+  /* short-lived client cache: one external call per hour per visitor, never per page view */
+  function cachedJSON(url,cacheKey,ttlMs){
+    var hit=null;
+    try{ hit=JSON.parse(localStorage.getItem(cacheKey)||"null"); }catch(e){ hit=null; }
+    if(hit && hit.t && (Date.now()-hit.t)<ttlMs){
+      try{ localStorage.setItem(cacheKey,JSON.stringify(hit)); }catch(e){}
+      return Promise.resolve(hit.d);
+    }
+    return fetch(url,{cache:"no-store"}).then(function(r){ return r.json(); }).then(function(d){
+      try{ localStorage.setItem(cacheKey,JSON.stringify({t:Date.now(),d:d})); }catch(e){}
+      return d;
+    }).catch(function(){
+      return hit && hit.d ? hit.d : null;
+    });
+  }
+
   function loadMetals(){
     loadBorsa(0);
     try{
-      fetch("https://api.gold-api.com/price/XAU",{cache:"no-store"})
-        .then(function(r){ return r.json(); })
+      cachedJSON("https://api.gold-api.com/price/XAU","ta_cache_gold",3600000)
         .then(function(d){
           if(d && d.price){ MET.gold=+d.price; MET.goldAt=d.updatedAt||new Date().toISOString(); MET.liveGold=true; renderMetals(); }
         })
@@ -1915,8 +1930,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     }catch(e){}
 
     try{
-      fetch("https://open.er-api.com/v6/latest/USD",{cache:"no-store"})
-        .then(function(r){ return r.json(); })
+      cachedJSON("https://open.er-api.com/v6/latest/USD","ta_cache_fx",3600000)
         .then(function(d){
           if(d && d.rates && d.rates.IQD){
             MET.fx=+d.rates.IQD;
