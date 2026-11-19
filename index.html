@@ -2346,7 +2346,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       }
       fails++;
       if(fails>=5){ lockedUntil=now+60000; fails=0; msg(t("desk_locked")); }
-      else msg(t("desk_wrong"));
+      else msg(t("desk_wrong")+" ["+e+"]");
     });
   }
 
