@@ -1203,7 +1203,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       intl_world:"World first", intl_world_h:"The global benchmark, then the Iraqi schedule",
       gl_eyebrow:"World market", gl_title:"Global refined products — per tonne",
       gl_sub:"Separate from the Iraqi board: these are international reference prices in US dollars per tonne. Iraq's regulated prices are shown above and are not mixed into these figures.",
-      intl_diesel:"US diesel per tonne", intl_petrol:"US petrol per tonne", intl_retail:"EIA weekly, US retail",
+      intl_diesel:"Gasoil / ULSD futures — per tonne", intl_petrol:"Gasoline (RBOB) futures — per tonne", intl_retail:"NYMEX futures · live",
       reg_label:"UNGM vendor number", reg_scope:"Sectors we advise on", reg_scope_v:"Fuel · logistics · procurement · documentation",
       ten_ready_h:"What we are ready to advise on",
       copied:"Copied",
@@ -1223,7 +1223,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       intl_h:"Global benchmark — Brent crude", intl_bbl:"barrel",
       intl_gap_h:"Iraqi diesel vs US reference", intl_gap_sub:"Regulated diesel per tonne in dollars, against the global diesel tonne",
       intl_cheaper:"Cheaper than the US diesel reference by", intl_src_h:"Source of the international figure", intl_src_link:"Open the series",
-      intl_note:"Brent spot is a real published price, read on the date shown. Barrels convert to tonnes at 7.33 bbl per tonne. Iraqi product prices convert at standard density: diesel 0.845, petrol 0.745, kerosene 0.810 kg per litre — so one tonne of diesel is 1,183 litres.",
+      intl_note:"Brent and refined-product futures are read live from NYMEX/ICE; the date and time of the last tick are shown on each card. Barrels convert to tonnes at 7.33 bbl per tonne; gallons convert at standard density (diesel 0.845, petrol 0.745, kerosene 0.810 kg/l) — one tonne of diesel is 1,183 litres. Platts assessments are subscription data and are not reproduced here; gasoil and RBOB futures track the same market and are the closest free reference.",
       read:"Read", mem_brief:"November briefing", mem_archive:"Closed notices", mem_need:"This note is for members. Enter your code to open it.",
       mem_area:"Trader desk", mem_until:"Member until", mem_until_end:"then closes automatically",
       mem_export:"Export my margin sheet", mem_exit:"Sign out on this device", mem_signed:"Signed out.",
@@ -1344,7 +1344,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       intl_world:"العالمي أولاً", intl_world_h:"المرجع العالمي، ثم الجدول العراقي",
       gl_eyebrow:"السوق العالمية", gl_title:"المشتقات النفطية العالمية — بالطن",
       gl_sub:"منفصلة تماماً عن اللوحة العراقية: هذه أسعار مرجعية دولية بالدولار للطن. الأسعار العراقية المنظّمة معروضة أعلاه ولا تُخلط بهذه الأرقام.",
-      intl_diesel:"الديزل الأمريكي للطن", intl_petrol:"البنزين الأمريكي للطن", intl_retail:"EIA أسبوعي، تجزئة أمريكية",
+      intl_diesel:"الديزل (Gasoil) — بالطن", intl_petrol:"البنزين (RBOB) — بالطن", intl_retail:"عقود نيويورك · لحظي",
       reg_label:"رقم المورّد في الأمم المتحدة", reg_scope:"الأقسام التي نستشير فيها", reg_scope_v:"الوقود · اللوجستيك · المشتريات · الوثائق",
       ten_ready_h:"ما نحن مستعدون للاستشارة فيه",
       copied:"تم النسخ",
@@ -1364,7 +1364,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       intl_h:"المرجع العالمي — خام برنت", intl_bbl:"برميل",
       intl_gap_h:"الديزل العراقي مقابل المرجع الأمريكي", intl_gap_sub:"الديزل المنظّم للطن بالدولار، مقابل الطن العالمي",
       intl_cheaper:"أرخص من مرجع الديزل الأمريكي بـ", intl_src_h:"مصدر الرقم العالمي", intl_src_link:"افتح السلسلة",
-      intl_note:"سعر برنت الفوري سعر منشور حقيقي، مقروء في التاريخ الظاهر. تحويل البرميل إلى طن بـ7.33 برميل للطن. أسعار المنتجات العراقية تُحوَّل بالكثافة القياسية: الديزل 0.845، البنزين 0.745، الكيروسين 0.810 كغم لللتر — أي أن طن الديزل 1,183 لتراً.",
+      intl_note:"برنت وعقود المشتقات تُقرأ لحظياً من NYMEX/ICE، ويظهر تاريخ آخر تحديث على كل بطاقة. تحويل البرميل إلى طن بـ7.33، والغالون بالكثافة القياسية (الديزل 0.845، البنزين 0.745، الكيروسين 0.810 كغم/لتر) — أي أن طن الديزل 1,183 لتراً. تقييمات بلاتس بيانات مدفوعة ولا نعيد نشرها؛ عقود الغاز أويل والبنزين تتابع السوق نفسه وهي أقرب مرجع مجاني.",
       read:"اقرأ", mem_brief:"إحاطة الشهر", mem_archive:"إعلانات مغلقة", mem_need:"هذه الإحاطة للأعضاء. أدخل كودك لتفتحها.",
       mem_area:"مكتب التاجر", mem_until:"عضو حتى", mem_until_end:"ثم يُغلق تلقائياً",
       mem_export:"صدّر ورقة الهامش", mem_exit:"خروج من هذا الجهاز", mem_signed:"تم الخروج.",
@@ -1767,9 +1767,9 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   }
 
   var DENSITY={diesel:0.845,petrol91:0.745,petrol95:0.745,petrol98:0.745,kero:0.810};
-  var GLOBAL={ brentUsd:107.03, date:"2026-11-03", bblPerTonne:7.33,
-    dieselGal:6.292, petrolGal:4.153, galDate:"2026-11-02",
-    src:"U.S. EIA via FRED (DCOILBRENTEU · GASDESW · GASREGW)", url:"https://fred.stlouisfed.org/series/DCOILBRENTEU" };
+  var GLOBAL={ brentUsd:89.62, date:"2026-11-19", bblPerTonne:7.33,
+    dieselGal:3.8409, petrolGal:2.4584, galDate:"2026-11-19",
+    src:"NYMEX / ICE futures via Yahoo Finance (BZ=F · HO=F · RB=F)", url:"https://finance.yahoo.com/quote/BZ=F" };
   /* server-side daily feed (taj/auto) overrides the dated snapshots above */
   var AUTO={last:""};
   function autoPull(){
