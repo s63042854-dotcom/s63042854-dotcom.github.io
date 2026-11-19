@@ -1054,7 +1054,6 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
             <div class="fld"><label data-i18n="s_fib">FIB account</label><input id="sFib" placeholder="IBAN"></div>
             <div class="fld"><label data-i18n="s_bin">Binance UID</label><input id="sBin"></div>
             <div class="fld"><label data-i18n="s_key">Write key</label><input id="sKey" autocomplete="off" placeholder="tajone-..."></div>
-            <div class="fld full"><label data-i18n="s_pass">Change desk password</label><input id="sPass" type="password" placeholder="••••••"></div>
           </div>
           <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
             <button class="btn gold sm" id="saveSettings" data-i18n="s_save">Save settings</button>
@@ -1578,7 +1577,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   var KEY = "tajone.v2";
   var DEFAULTS = {
     lang:"en",
-    pass:hash("10079@"),
+    pass:"",
     secv:"v3",
     prices:JSON.parse(JSON.stringify(OFFICIAL)),
     articles:[
@@ -1647,7 +1646,6 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   var FB={ apiKey:"AIzaSyDsMizmao4lqzaP_x8DTpzy8nLduWCOnvc", projectId:"taj-one-23c1c", enabled:true };
   var SYNC_ROOTS=["prices","settings","articles","tenders","globalPrices"];
   var OFFICE_MAIL="office.tajone.2026@gmail.com";
-  var OFFICE_PW="10079@As";
   var AUTH={mail:"",token:"",exp:0};
   function authStore(){ try{ localStorage.setItem("taj_auth",JSON.stringify({e:AUTH.mail,t:AUTH.token,x:AUTH.exp})); }catch(e){} }
   function authRestore(){
@@ -1689,7 +1687,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   function cloudSignIn(pw){
     if(!pw){ authState(""); return; }
     authState("جارٍ الاتصال بالحساب السحابي…");
-    authSignIn(OFFICE_MAIL,OFFICE_PW).then(function(r){
+    authSignIn(OFFICE_MAIL,pw).then(function(r){
       if(r.ok){ authState("متصل بالحساب السحابي — إصدار الأكواد مفعّل"); toast("متصل سحابياً"); }
       else { authState("غير متصل سحابياً ("+r.err+") — لن يُقبل إصدار الأكواد"); toast("غير متصل سحابياً"); }
     });
@@ -1738,8 +1736,6 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   function saveLocal(){ try{ localStorage.setItem(KEY,JSON.stringify(db)); }catch(e){} }
   function save(){ saveLocal(); cloudPush(); }
   var db=load();
-  /* password rotation: force the new desk password once on every stored copy */
-  if(db.passV!=="3"){ db.pass=hash("10079@"); db.passV="3"; saveLocal(); }
 
   var $=function(s,r){ return (r||document).querySelector(s); };
   var $$=function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
@@ -2326,17 +2322,29 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     var now=Date.now();
     if(now<lockedUntil){ msg(t("desk_locked")); return; }
     var _in=$("#deskPass").value;
-    if(_in==="10079@"){
-      unlocked=true; fails=0; deskTouch();
-      var _pw=$("#deskPass").value;
-      $("#deskLogin").classList.add("hidden"); $("#deskApp").classList.remove("hidden");
-      msg(""); $("#deskPass").value=""; renderAdmin();
-      cloudSignIn(_pw);
-    } else {
+    if(!_in){ msg(t("desk_wrong")); return; }
+    var _btn=$("#deskEnter");
+    if(_btn && _btn.disabled) return;
+    if(_btn) _btn.disabled=true;
+    msg("...");
+    authSignIn(OFFICE_MAIL,_in).then(function(r){
+      if(_btn) _btn.disabled=false;
+      if(r.ok){
+        unlocked=true; fails=0; deskTouch();
+        $("#deskLogin").classList.add("hidden"); $("#deskApp").classList.remove("hidden");
+        msg(""); $("#deskPass").value=""; renderAdmin();
+        authState("متصل بالحساب السحابي — إصدار الأكواد مفعّل");
+        toast("متصل سحابياً");
+        return;
+      }
+      var e=r.err||"ERROR";
+      if(e==="NETWORK" || /API key|referer|blocked|PERMISSION_DENIED/i.test(e)){
+        msg("تعذّر التحقق الآن ("+e+")"); return;
+      }
       fails++;
       if(fails>=5){ lockedUntil=now+60000; fails=0; msg(t("desk_locked")); }
       else msg(t("desk_wrong"));
-    }
+    });
   }
 
   function renderAdmin(){
@@ -2467,8 +2475,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     $("#saveSettings").addEventListener("click",function(){
       db.settings={ wa:$("#sWa").value.trim(), mail:$("#sMail").value.trim(), fib:$("#sFib").value.trim(), bin:$("#sBin").value.trim() };
       if($("#sKey")) db.wkey=$("#sKey").value.trim();
-      if($("#sPass").value) db.pass=hash($("#sPass").value);
-      save(); renderContact(); $("#sPass").value=""; toast(t("saved"));
+      save(); renderContact(); toast(t("saved"));
     });
 
     $("#exportData").addEventListener("click",function(){
