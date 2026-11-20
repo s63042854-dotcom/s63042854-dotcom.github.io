@@ -1043,15 +1043,17 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
         </div>
 
         <div data-pane="codes" class="hidden">
-          <p class="muted" style="font-size:12.5px;margin-bottom:14px" data-i18n="dc_valid">Each code opens the member desk until the end of the period you choose. Send it by WhatsApp after the transfer is confirmed.</p>
+          <p class="muted" style="font-size:12.5px;margin-bottom:14px" data-i18n="dc_valid">Each code opens the trader desk for 30 days from the moment the buyer activates it. Send it on WhatsApp after the transfer is confirmed.</p>
           <div class="grid2" style="margin-bottom:14px">
             <div class="fld"><label data-i18n="dc_plan">Plan</label><select id="codePlan"><option value="trader">Trader desk</option><option value="enterprise">Enterprise</option></select></div>
             <div class="fld"><label data-i18n="dc_qty">How many</label><input id="codeQty" type="number" min="1" max="500" value="1"></div>
           </div>
-          <button class="btn gold sm" id="genCodes" data-i18n="dc_gen">Generate codes</button>
-          <button class="btn sm" id="refreshCodes" data-i18n="dc_refresh">Refresh status</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn gold sm" id="genCodes" data-i18n="dc_gen">Generate codes</button>
+            <button class="btn sm" id="refreshCodes" data-i18n="dc_refresh">Refresh status</button>
+          </div>
           <div style="margin-top:18px" id="adminCodes"></div>
-          <p class="muted" style="font-size:11.5px;margin-top:14px;line-height:1.7" data-i18n="dc_local">Activation is verified in the buyer's browser. Full single-use enforcement needs a small database — that is the next phase.</p>
+          <p class="muted" style="font-size:11.5px;margin-top:14px;line-height:1.7" data-i18n="dc_cloud">Codes are stored in the cloud. Once a buyer activates one it is marked as used and cannot be reused.</p>
         </div>
 
         <div data-pane="settings" class="hidden">
@@ -1242,7 +1244,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       act_notissued:"This code was not issued by the office.", act_net:"Could not reach the server. Check your connection and try again.",
       dc_pending:"not saved", dc_issuefail:"Some codes were not saved to the cloud — regenerate them.",
       dt_codes:"Codes", dc_note:"Each code opens the member desk until the end of the period you choose. Send it by WhatsApp after the transfer is confirmed.",
-      dc_period:"Period", dc_plan:"Plan", dc_qty:"How many", dc_gen:"Generate codes", dc_refresh:"Refresh status", dc_status_ok:"Active", dc_status_used:"Used", dc_valid:"Each code opens the trader desk for 30 days from the moment the buyer activates it.", dc_copy:"Copy", dc_copied:"Copied.",
+      dc_period:"Period", dc_plan:"Plan", dc_qty:"How many", dc_gen:"Generate codes", dc_refresh:"Refresh status", dc_status_ok:"Active", dc_status_used:"Used", dc_valid:"Each code opens the trader desk for 30 days from the moment the buyer activates it.", dc_cloud:"Codes are stored in the cloud and marked as used when a buyer activates them.", dc_copy:"Copy", dc_copied:"Copied.",
       dc_local:"Activation is verified in the buyer's browser. Full single-use enforcement needs a small database — that is the next phase.",
       hero_eyebrow:"Iraq energy intelligence",
       hero_t1:"Fuel prices per tonne.", hero_t2:"With real numbers.",
@@ -1383,7 +1385,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       act_notissued:"هذا الكود غير صادر من المكتب.", act_net:"تعذّر الوصول إلى السيرفر. تحقّق من الاتصال وأعد المحاولة.",
       dc_pending:"لم يُحفظ", dc_issuefail:"بعض الأكواد لم تُحفظ في السحابة — أعد توليدها.",
       dt_codes:"الأكواد", dc_note:"كل كود يفتح مكتب التاجر حتى نهاية الفترة التي تختارها. أرسله بواتساب بعد تأكيد التحويل.",
-      dc_period:"الفترة", dc_plan:"الخطة", dc_qty:"العدد", dc_gen:"ولّد الأكواد", dc_refresh:"تحديث الحالة", dc_status_ok:"فعال", dc_status_used:"مستخدم", dc_valid:"كل كود يفتح لوحة التاجر 30 يوماً من لحظة تفعيل المشتري له.", dc_copy:"نسخ", dc_copied:"تم النسخ.",
+      dc_period:"الفترة", dc_plan:"الخطة", dc_qty:"العدد", dc_gen:"ولّد الأكواد", dc_refresh:"تحديث الحالة", dc_status_ok:"فعال", dc_status_used:"مستخدم", dc_valid:"كل كود يفتح لوحة التاجر 30 يوماً من لحظة تفعيل المشتري له.", dc_cloud:"الأكواد محفوظة في السحابة وتُعلَّم كمستخدمة عند تفعيل المشتري لها.", dc_copy:"نسخ", dc_copied:"تم النسخ.",
       dc_local:"التفعيل يُتحقق منه في متصفح المشتري. منع الاستخدام المتكرر يحتاج قاعدة بيانات صغيرة — وهي المرحلة القادمة.",
       hero_eyebrow:"معلومات الطاقة العراقية",
       hero_t1:"أسعار الوقود بالطن.", hero_t2:"بأرقام حقيقية.",
