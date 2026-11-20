@@ -2689,8 +2689,6 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     });
 
     /* codes */
-    var nowM=new Date().toISOString().slice(0,7);
-    $("#codePeriod").value=nowM;
     $("#genCodes").addEventListener("click",function(){
       var plan=($("#codePlan")&&$("#codePlan").value)||"trader";
       var qty=Math.max(1,Math.min(500,+$("#codeQty").value||1));
