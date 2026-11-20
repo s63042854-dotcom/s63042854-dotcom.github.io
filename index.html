@@ -1099,7 +1099,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       <p class="muted" style="font-size:13px;line-height:1.7;margin-bottom:16px" data-i18n="act_sub">Enter the code you received on WhatsApp. It opens the member desk until the end of its period, then closes automatically.</p>
       <div class="fld">
         <label for="actCode" data-i18n="act_code">Code</label>
-        <input id="actCode" placeholder="TAJ-2026-11-XXXX" autocomplete="off" style="font-family:ui-monospace,monospace;letter-spacing:.06em">
+        <input id="actCode" placeholder="TAJ-XXXXXXX" autocomplete="off" style="font-family:ui-monospace,monospace;letter-spacing:.06em">
       </div>
       <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center">
         <button class="btn gold sm" id="actGo" data-i18n="act_go">Activate</button>
@@ -1241,6 +1241,12 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       act_sub:"Enter the code you received on WhatsApp. It opens the member desk until the end of its period, then closes automatically.",
       act_code:"Code", act_go:"Activate", act_bad:"That code is not valid.", act_expired:"That code has expired.",
       act_ok:"Activated. Welcome to the desk.",
+      act_restored:"Welcome back. Your desk is restored on this device.",
+      act_renew:"This subscription has ended. Ask the office for a new code.",
+      act_fail:"Activation did not complete. Check the connection and try again.",
+      lic_revoked:"The subscription is no longer valid on this device.",
+      del_used_kept:"This code was already activated, so it stays recorded in the cloud.",
+      del_fail:"Could not cancel this code in the cloud — it is still active.",
       act_notissued:"This code was not issued by the office.", act_net:"Could not reach the server. Check your connection and try again.",
       dc_pending:"not saved", dc_issuefail:"Some codes were not saved to the cloud — regenerate them.",
       dt_codes:"Codes", dc_note:"Each code opens the member desk until the end of the period you choose. Send it by WhatsApp after the transfer is confirmed.",
@@ -1382,6 +1388,12 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       act_sub:"أدخل الكود الذي وصلك على واتساب. يفتح مكتب التاجر حتى نهاية فترته ثم يُغلق تلقائياً.",
       act_code:"الكود", act_go:"تفعيل", act_bad:"هذا الكود غير صالح.", act_expired:"هذا الكود منتهي.",
       act_ok:"تم التفعيل. أهلاً بك في المكتب.",
+      act_restored:"هلاً بعودتك. استُعيد اشتراكك على هذا الجهاز.",
+      act_renew:"انتهى هذا الاشتراك. اطلب كوداً جديداً من المكتب.",
+      act_fail:"لم يكتمل التفعيل. تحقّق من الاتصال وأعد المحاولة.",
+      lic_revoked:"الاشتراك لم يعد صالحاً على هذا الجهاز.",
+      del_used_kept:"هذا الكود مفعّل مسبقاً، لذلك بقي محفوظاً في السحابة.",
+      del_fail:"تعذّر إلغاء الكود في السحابة — ما زال فعالاً.",
       act_notissued:"هذا الكود غير صادر من المكتب.", act_net:"تعذّر الوصول إلى السيرفر. تحقّق من الاتصال وأعد المحاولة.",
       dc_pending:"لم يُحفظ", dc_issuefail:"بعض الأكواد لم تُحفظ في السحابة — أعد توليدها.",
       dt_codes:"الأكواد", dc_note:"كل كود يفتح مكتب التاجر حتى نهاية الفترة التي تختارها. أرسله بواتساب بعد تأكيد التحويل.",
@@ -1744,6 +1756,14 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   }
   function saveLocal(){ try{ localStorage.setItem(KEY,JSON.stringify(db)); }catch(e){} }
   function save(){ saveLocal(); cloudPush(); }
+  var DEV_KEY="taj.device.v1";
+  function deviceId(){
+    try{
+      var d=localStorage.getItem(DEV_KEY);
+      if(!d){ d="d"+Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem(DEV_KEY,d); }
+      return d;
+    }catch(e){ return "d0"; }
+  }
   var db=load();
 
   var $=function(s,r){ return (r||document).querySelector(s); };
@@ -2209,9 +2229,34 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   }
   function licenseEnd(){
     var L=db.license||{};
-    if(L.endAt){ var t=Date.parse(L.endAt); if(!isNaN(t)) return t; }
-    if(L.period) return periodEnd(L.period);
-    return 0;
+    var e=0;
+    if(L.endAt){ var t=Date.parse(L.endAt); if(!isNaN(t)) e=t; }
+    if(!e && L.period) e=periodEnd(L.period);
+    if(L.verifiedEnd && e>L.verifiedEnd+60000) e=L.verifiedEnd;
+    return e;
+  }
+  function licenseSync(){
+    var L=db.license;
+    if(!L||!L.code) return;
+    if(!cloudEnabled()) return;
+    fbGetCode(L.code).then(function(r){
+      if(!r) return;
+      if(r.missing){ db.license=null; saveLocal(); renderMember(); toast(t("lic_revoked")); return; }
+      if(r.error) return;
+      var f=(r.doc&&r.doc.fields)||{};
+      var used=!!(f.used&&f.used.booleanValue===true);
+      var dev=(f.device&&f.device.stringValue)||"";
+      var expS=(f.expiresAt&&f.expiresAt.stringValue)||"";
+      var exp=expS?Date.parse(expS):0;
+      if(used && dev && dev!==deviceId()){ db.license=null; saveLocal(); renderMember(); toast(t("lic_revoked")); return; }
+      if(exp){
+        L.verifiedEnd=exp;
+        L.endAt=new Date(exp).toISOString();
+      }
+      saveLocal();
+      if(licenseEnd()<Date.now() && L.code){ toast(t("act_renew")); }
+      renderMember();
+    });
   }
   function licenseUntilText(){
     var e=licenseEnd(); if(!e) return "";
@@ -2299,11 +2344,17 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     var fields={
       used:{booleanValue:true},
       activatedAt:{stringValue:new Date().toISOString()},
-      device:{stringValue:(navigator.userAgent||"").slice(0,80)}
+      device:{stringValue:deviceId()}
     };
     var mask=["used","activatedAt","device"];
     if(endAt){ fields.expiresAt={stringValue:endAt}; mask.push("expiresAt"); }
     return fetch(fbCodeUrl(code,mask),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:fields})})
+      .then(function(r){ return r.ok; }).catch(function(){ return false; });
+  }
+  function fbRevokeCode(code){
+    var fields={ used:{booleanValue:true}, expiresAt:{stringValue:new Date().toISOString()} };
+    var mask=["used","expiresAt"];
+    return fetch(fbCodeUrl(code,mask),{method:"PATCH",headers:authHdr(),body:JSON.stringify({fields:fields})})
       .then(function(r){ return r.ok; }).catch(function(){ return false; });
   }
   function fbGetCode(code){
@@ -2332,24 +2383,45 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       if(r.missing){ msg.style.color="var(--bad)"; msg.textContent=t("act_notissued"); return; }
       if(r.error){ msg.style.color="var(--warn)"; msg.textContent=t("act_net"); return; }
       var f=(r.doc&&r.doc.fields)||{};
-      if(f.used&&f.used.booleanValue===true){ msg.style.color="var(--bad)"; msg.textContent=t("act_used"); return; }
+      var u=(f.used&&f.used.booleanValue===true);
+      var dev=(f.device&&f.device.stringValue)||"";
+      var expS=(f.expiresAt&&f.expiresAt.stringValue)||"";
+      var exp=expS?Date.parse(expS):0;
+      if(u){
+        if(dev && dev===deviceId()){
+          if(exp && exp>Date.now()){
+            db.license={code:c, plan:"trader", startAt:new Date().toISOString(),
+              endAt:new Date(exp).toISOString(), days:Math.max(0,Math.ceil((exp-Date.now())/86400000)), verifiedEnd:exp};
+            save(); renderMember();
+            msg.style.color="var(--ok)"; msg.textContent=t("act_restored");
+            setTimeout(function(){ $("#actModal").classList.remove("open"); document.body.style.overflow=""; },900);
+            return;
+          }
+          msg.style.color="var(--warn)"; msg.textContent=t("act_renew"); return;
+        }
+        msg.style.color="var(--bad)"; msg.textContent=t("act_used"); return;
+      }
       finishActivate(v,c);
     });
   }
   function finishActivate(v,c){
     var msg=$("#actMsg");
     var now=new Date();
+    var lic;
     if(v.kind==="days"){
       var days=v.days||CODE_DAYS;
       var end=new Date(now.getTime()+days*86400000);
-      db.license={code:c, plan:"trader", startAt:now.toISOString(), endAt:end.toISOString(), days:days};
+      lic={code:c, plan:"trader", startAt:now.toISOString(), endAt:end.toISOString(), days:days, verifiedEnd:end.getTime()};
     } else {
-      db.license={code:c, plan:"trader", period:v.period, startAt:now.toISOString()};
+      lic={code:c, plan:"trader", period:v.period, startAt:now.toISOString()};
     }
-    save(); renderMember();
-    fbMarkUsed(c, db.license.endAt||"");
-    msg.style.color="var(--ok)"; msg.textContent=t("act_ok");
-    setTimeout(function(){ $("#actModal").classList.remove("open"); document.body.style.overflow=""; },900);
+    msg.style.color="var(--muted)"; msg.textContent=t("act_check");
+    fbMarkUsed(c, lic.endAt||"").then(function(ok){
+      if(!ok){ msg.style.color="var(--warn)"; msg.textContent=t("act_fail"); return; }
+      db.license=lic; save(); renderMember();
+      msg.style.color="var(--ok)"; msg.textContent=t("act_ok");
+      setTimeout(function(){ $("#actModal").classList.remove("open"); document.body.style.overflow=""; },900);
+    });
   }
 
   var fails=0, lockedUntil=0, unlocked=false;
@@ -2630,6 +2702,8 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     });
     cloudPull();
     autoPull();
+    setTimeout(licenseSync,1200);
+    document.addEventListener("visibilitychange",function(){ if(!document.hidden) licenseSync(); });
     if($("#xlsBtn")) $("#xlsBtn").addEventListener("click",exportXls);
     document.addEventListener("click",function(e){
       var c=e.target.closest("[data-consult]");
@@ -2720,7 +2794,19 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
         } else { toast(val); }
       }
       var dc=e.target.closest("[data-del-code]");
-      if(dc){ db.codes=db.codes.filter(function(x){ return x.code!==dc.dataset.delCode; }); save(); renderCodes(); toast(t("deleted")); }
+      if(dc){
+        var dcode=dc.dataset.delCode;
+        var dropLocal=function(){ db.codes=db.codes.filter(function(x){ return x.code!==dcode; }); save(); renderCodes(); };
+        if(!cloudEnabled()){ dropLocal(); toast(t("deleted")); return; }
+        fbGetCode(dcode).then(function(r){
+          var f=(r&&r.doc&&r.doc.fields)||{};
+          if(f.used&&f.used.booleanValue===true){ dropLocal(); toast(t("del_used_kept")); return; }
+          fbRevokeCode(dcode).then(function(ok){
+            dropLocal();
+            toast(ok?t("deleted"):t("del_fail"));
+          });
+        });
+      }
     });
 
     $("#logo").addEventListener("click",function(){ window.scrollTo({top:0,behavior:"smooth"}); });
