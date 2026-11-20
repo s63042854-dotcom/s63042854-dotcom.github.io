@@ -771,6 +771,7 @@
             <li data-i18n="v4">One-press export to Excel</li>
           </ul>
           <button class="btn gold" id="vipBtn" data-i18n="plan_vip_cta">Request access</button>
+          <button class="btn sm" id="vipActivate" style="width:100%;margin-top:8px" data-i18n="mem_activate">I have an activation code</button>
         </div>
         <div class="plan rv">
           <span class="ptag" data-i18n="plan_ent_tag">Corporate</span>
@@ -1042,12 +1043,13 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
         </div>
 
         <div data-pane="codes" class="hidden">
-          <p class="muted" style="font-size:12.5px;margin-bottom:14px" data-i18n="dc_note">Each code opens the member desk until the end of the period you choose. Send it by WhatsApp after the transfer is confirmed.</p>
+          <p class="muted" style="font-size:12.5px;margin-bottom:14px" data-i18n="dc_valid">Each code opens the member desk until the end of the period you choose. Send it by WhatsApp after the transfer is confirmed.</p>
           <div class="grid2" style="margin-bottom:14px">
-            <div class="fld"><label data-i18n="dc_period">Period</label><input id="codePeriod" type="month"></div>
-            <div class="fld"><label data-i18n="dc_qty">How many</label><input id="codeQty" type="number" min="1" max="50" value="1"></div>
+            <div class="fld"><label data-i18n="dc_plan">Plan</label><select id="codePlan"><option value="trader">Trader desk</option><option value="enterprise">Enterprise</option></select></div>
+            <div class="fld"><label data-i18n="dc_qty">How many</label><input id="codeQty" type="number" min="1" max="500" value="1"></div>
           </div>
           <button class="btn gold sm" id="genCodes" data-i18n="dc_gen">Generate codes</button>
+          <button class="btn sm" id="refreshCodes" data-i18n="dc_refresh">Refresh status</button>
           <div style="margin-top:18px" id="adminCodes"></div>
           <p class="muted" style="font-size:11.5px;margin-top:14px;line-height:1.7" data-i18n="dc_local">Activation is verified in the buyer's browser. Full single-use enforcement needs a small database — that is the next phase.</p>
         </div>
@@ -1240,7 +1242,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       act_notissued:"This code was not issued by the office.", act_net:"Could not reach the server. Check your connection and try again.",
       dc_pending:"not saved", dc_issuefail:"Some codes were not saved to the cloud — regenerate them.",
       dt_codes:"Codes", dc_note:"Each code opens the member desk until the end of the period you choose. Send it by WhatsApp after the transfer is confirmed.",
-      dc_period:"Period", dc_qty:"How many", dc_gen:"Generate codes", dc_copy:"Copy", dc_copied:"Copied.",
+      dc_period:"Period", dc_plan:"Plan", dc_qty:"How many", dc_gen:"Generate codes", dc_refresh:"Refresh status", dc_status_ok:"Active", dc_status_used:"Used", dc_valid:"Each code opens the trader desk for 30 days from the moment the buyer activates it.", dc_copy:"Copy", dc_copied:"Copied.",
       dc_local:"Activation is verified in the buyer's browser. Full single-use enforcement needs a small database — that is the next phase.",
       hero_eyebrow:"Iraq energy intelligence",
       hero_t1:"Fuel prices per tonne.", hero_t2:"With real numbers.",
@@ -1381,7 +1383,7 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
       act_notissued:"هذا الكود غير صادر من المكتب.", act_net:"تعذّر الوصول إلى السيرفر. تحقّق من الاتصال وأعد المحاولة.",
       dc_pending:"لم يُحفظ", dc_issuefail:"بعض الأكواد لم تُحفظ في السحابة — أعد توليدها.",
       dt_codes:"الأكواد", dc_note:"كل كود يفتح مكتب التاجر حتى نهاية الفترة التي تختارها. أرسله بواتساب بعد تأكيد التحويل.",
-      dc_period:"الفترة", dc_qty:"العدد", dc_gen:"ولّد الأكواد", dc_copy:"نسخ", dc_copied:"تم النسخ.",
+      dc_period:"الفترة", dc_plan:"الخطة", dc_qty:"العدد", dc_gen:"ولّد الأكواد", dc_refresh:"تحديث الحالة", dc_status_ok:"فعال", dc_status_used:"مستخدم", dc_valid:"كل كود يفتح لوحة التاجر 30 يوماً من لحظة تفعيل المشتري له.", dc_copy:"نسخ", dc_copied:"تم النسخ.",
       dc_local:"التفعيل يُتحقق منه في متصفح المشتري. منع الاستخدام المتكرر يحتاج قاعدة بيانات صغيرة — وهي المرحلة القادمة.",
       hero_eyebrow:"معلومات الطاقة العراقية",
       hero_t1:"أسعار الوقود بالطن.", hero_t2:"بأرقام حقيقية.",
@@ -2181,24 +2183,40 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     for(var i=0;i<str.length;i++) sum+=str.charCodeAt(i)*(i+1);
     return ALPHA[sum%ALPHA.length];
   }
-  function makeCode(period){
+  var CODE_DAYS=30;
+  function makeCode(){
     var body="";
-    for(var i=0;i<5;i++) body+=ALPHA[Math.floor(Math.random()*ALPHA.length)];
-    var key=String(period).replace("-","")+body;
-    return "TAJ-"+period+"-"+body+checksum(key);
+    for(var i=0;i<6;i++) body+=ALPHA[Math.floor(Math.random()*ALPHA.length)];
+    return "TAJ-"+body+checksum(body);
   }
   function validCode(code){
-    var m=/^TAJ-(\d{4})-(\d{2})-([A-Z0-9]{3,6})([A-Z0-9])$/.exec(String(code).trim().toUpperCase());
-    if(!m) return null;
-    var period=m[1]+"-"+m[2];
-    if(periodEnd(period) < Date.now()) return {period:period, expired:true};
-    var key=m[1]+m[2]+m[3];
-    if(checksum(key)!==m[4]) return null;
-    return {period:period, expired:false};
+    var s=String(code||"").trim().toUpperCase().replace(/\s+/g,"");
+    var m2=/^TAJ-([A-Z0-9]{6})([A-Z0-9])$/.exec(s);
+    if(m2){
+      if(checksum(m2[1])!==m2[2]) return null;
+      return {kind:"days",days:CODE_DAYS,expired:false};
+    }
+    var m1=/^TAJ-(\d{4})-(\d{2})-([A-Z0-9]{3,6})([A-Z0-9])$/.exec(s);
+    if(m1){
+      var period=m1[1]+"-"+m1[2];
+      if(periodEnd(period) < Date.now()) return {kind:"month",period:period,expired:true};
+      if(checksum(m1[1]+m1[2]+m1[3])!==m1[4]) return null;
+      return {kind:"month",period:period,expired:false};
+    }
+    return null;
   }
-  function licenseActive(){
-    return !!(db.license && periodEnd(db.license.period) >= Date.now());
+  function licenseEnd(){
+    var L=db.license||{};
+    if(L.endAt){ var t=Date.parse(L.endAt); if(!isNaN(t)) return t; }
+    if(L.period) return periodEnd(L.period);
+    return 0;
   }
+  function licenseUntilText(){
+    var e=licenseEnd(); if(!e) return "";
+    try{ return new Date(e-60000).toLocaleDateString("en-CA",{timeZone:"Asia/Baghdad"}); }catch(_){ return ""; }
+  }
+  function licenseActive(){ return !!(db.license && licenseEnd() >= Date.now()); }
+
 
   function renderMember(){
     var on=licenseActive();
@@ -2207,9 +2225,9 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     if(btn) btn.classList.toggle("hidden", on);
     if(!on){ if(db.license){ db.license=null; save(); } return; }
 
-    var msLeft=periodEnd(db.license.period)-Date.now();
+    var msLeft=licenseEnd()-Date.now();
     var dLeft=Math.max(0,Math.ceil(msLeft/86400000));
-    $("#memUntil").textContent=t("mem_until")+" "+db.license.period+" · "+t("mem_until_end")+
+    $("#memUntil").textContent=t("mem_until")+" "+licenseUntilText()+" "+t("mem_until_end")+
       (dLeft<=7 ? " — "+t("mem_soon")+" "+dLeft+" "+t("days") : "");
     $("#memUntil").style.color=(dLeft<=3)?"#E05A4F":"";
     var closed=(db.tenders||[]).filter(function(x){ return daysLeft(x.close)<0; });
@@ -2233,14 +2251,31 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
 
   function renderCodes(){
     var list=db.codes||[];
-    $("#adminCodes").innerHTML = list.length ? list.map(function(c){
-      var st=c.issued===false ? '<span style="color:var(--warn);font-size:11px">'+esc(t("dc_pending"))+'</span>' : '';
+    var rows=list.map(function(c){
+      var st;
+      if(c.used) st='<span style="color:var(--muted);font-size:11px">'+esc(t("dc_status_used"))+'</span>';
+      else if(c.issued===false) st='<span style="color:var(--warn);font-size:11px">'+esc(t("dc_pending"))+'</span>';
+      else st='<span style="color:var(--ok);font-size:11px">'+esc(t("dc_status_ok"))+'</span>';
       return '<div class="listrow code-line"><span>'+esc(c.code)+' '+st+'</span>'+
         '<span style="display:flex;gap:8px;align-items:center">'+
-        '<span class="muted" style="font-size:11px">'+esc(c.period)+'</span>'+
+        '<span class="muted" style="font-size:11px">'+esc((c.plan||"trader")+" · "+(c.at||""))+'</span>'+
         '<button class="del" data-copy-code="'+esc(c.code)+'">'+esc(t("dc_copy"))+'</button>'+
         '<button class="del" data-del-code="'+esc(c.code)+'">'+esc(t("delete"))+'</button></span></div>';
-    }).join("") : '<p class="muted" style="font-size:12.5px">—</p>';
+    }).join("");
+    $("#adminCodes").innerHTML = rows || '<p class="muted" style="font-size:12.5px">—</p>';
+  }
+  function refreshCodeStatus(){
+    var list=db.codes||[]; if(!list.length||!cloudEnabled()) return;
+    var left=list.length;
+    list.forEach(function(c){
+      fbGetCode(c.code).then(function(r){
+        if(r && r.doc && r.doc.fields){
+          c.used = !!(r.doc.fields.used && r.doc.fields.used.booleanValue===true);
+          c.issued = true;
+        }
+        if(--left===0){ saveLocal(); renderCodes(); toast(t("saved")); }
+      });
+    });
   }
 
   /* the office issues a code, the buyer only proves it exists and is unused */
@@ -2249,22 +2284,24 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     if(mask) for(var i=0;i<mask.length;i++) u+="&updateMask.fieldPaths="+encodeURIComponent(mask[i]);
     return u;
   }
-  function fbIssueCode(code,period){
+  function fbIssueCode(code,plan){
     var fields={
-      period:{stringValue:String(period)},
+      plan:{stringValue:String(plan||"trader")},
       issuedAt:{stringValue:todayBaghdad()},
       used:{booleanValue:false}
     };
     return fetch(fbCodeUrl(code),{method:"PATCH",headers:authHdr(),body:JSON.stringify({fields:fields})})
       .then(function(r){ return r.ok; }).catch(function(){ return false; });
   }
-  function fbMarkUsed(code){
+  function fbMarkUsed(code,endAt){
     var fields={
       used:{booleanValue:true},
       activatedAt:{stringValue:new Date().toISOString()},
       device:{stringValue:(navigator.userAgent||"").slice(0,80)}
     };
-    return fetch(fbCodeUrl(code,["used","activatedAt","device"]),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:fields})})
+    var mask=["used","activatedAt","device"];
+    if(endAt){ fields.expiresAt={stringValue:endAt}; mask.push("expiresAt"); }
+    return fetch(fbCodeUrl(code,mask),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({fields:fields})})
       .then(function(r){ return r.ok; }).catch(function(){ return false; });
   }
   function fbGetCode(code){
@@ -2275,6 +2312,12 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     }).catch(function(){ return {error:true}; });
   }
 
+  function openActivate(){
+    var m=$("#actModal"); if(!m) return;
+    m.classList.add("open"); document.body.style.overflow="hidden";
+    var f=$("#actCode"); if(f){ f.value=""; setTimeout(function(){ try{f.focus();}catch(e){} },80); }
+    var g=$("#actMsg"); if(g) g.textContent="";
+  }
   function activateCode(){
     var raw=$("#actCode").value, msg=$("#actMsg");
     var v=validCode(raw);
@@ -2293,9 +2336,16 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
   }
   function finishActivate(v,c){
     var msg=$("#actMsg");
-    db.license={period:v.period, at:new Date().toISOString(), code:c};
+    var now=new Date();
+    if(v.kind==="days"){
+      var days=v.days||CODE_DAYS;
+      var end=new Date(now.getTime()+days*86400000);
+      db.license={code:c, plan:"trader", startAt:now.toISOString(), endAt:end.toISOString(), days:days};
+    } else {
+      db.license={code:c, plan:"trader", period:v.period, startAt:now.toISOString()};
+    }
     save(); renderMember();
-    fbMarkUsed(c);
+    fbMarkUsed(c, db.license.endAt||"");
     msg.style.color="var(--ok)"; msg.textContent=t("act_ok");
     setTimeout(function(){ $("#actModal").classList.remove("open"); document.body.style.overflow=""; },900);
   }
@@ -2585,6 +2635,8 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     });
 
     $("#vipBtn").addEventListener("click",function(){ requestLead("TAJ ONE — Trader desk access"); });
+    if($("#vipActivate")) $("#vipActivate").addEventListener("click",function(){ openActivate(); });
+    if($("#refreshCodes")) $("#refreshCodes").addEventListener("click",refreshCodeStatus);
     $("#entBtn").addEventListener("click",function(){ requestLead("TAJ ONE — Enterprise desk access"); });
 
     $$("[data-close-policy]").forEach(function(b){ b.addEventListener("click",closePolicy); });
@@ -2638,19 +2690,20 @@ window.TA_ADS = { enabled:false, client:"ca-pub-7915631449697284", slot:"" };
     var nowM=new Date().toISOString().slice(0,7);
     $("#codePeriod").value=nowM;
     $("#genCodes").addEventListener("click",function(){
-      var period=$("#codePeriod").value||nowM;
-      var qty=Math.max(1,Math.min(50,+$("#codeQty").value||1));
+      var plan=($("#codePlan")&&$("#codePlan").value)||"trader";
+      var qty=Math.max(1,Math.min(500,+$("#codeQty").value||1));
       var made=[];
+      db.codes=db.codes||[];
       for(var i=0;i<qty;i++){
-        var c=makeCode(period);
+        var c=makeCode();
         made.push(c);
-        db.codes.push({code:c, period:period, at:todayBaghdad(), issued:false});
+        db.codes.unshift({code:c, plan:plan, at:todayBaghdad(), issued:false, used:false});
       }
       renderCodes(); saveLocal(); toast(t("added"));
       if(!cloudEnabled()) return;
       var left=made.length, bad=0;
       made.forEach(function(c){
-        fbIssueCode(c,period).then(function(ok){
+        fbIssueCode(c,plan).then(function(ok){
           if(ok){ db.codes.forEach(function(x){ if(x.code===c) x.issued=true; }); }
           else bad++;
           if(--left===0){ saveLocal(); renderCodes(); if(bad) toast(t("dc_issuefail")); }
